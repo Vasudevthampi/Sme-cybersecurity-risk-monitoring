@@ -1,0 +1,29 @@
+# Maven build target directory
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Embedded H2 Database local files
+data/
+*.mv.db
+*.trace.db
+
+# Logs
+logs/
+*.log
+
+# IDE specific files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.factorypath
+
+# OS files
+Thumbs.db
+.DS_Store

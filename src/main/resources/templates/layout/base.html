@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title != null ? title + ' - SME Cyber Risk Monitor' : 'SME Cyber Risk Monitor'}">SME Cyber Risk Monitor</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+            .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+
+    <!-- Top Navigation Bar Fragment -->
+    <header th:fragment="navbar" class="bg-slate-900 text-white shadow-md border-b border-slate-800 no-print sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="/dashboard" class="flex items-center space-x-2 text-indigo-400 hover:text-white transition">
+                    <div class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-shield-halved text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg tracking-tight text-white">SME CyberRisk</span>
+                        <span class="text-xs text-indigo-300 block -mt-1 font-medium tracking-wide">POSTURE & RISK MONITOR</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Header Nav Links -->
+            <nav class="hidden md:flex items-center space-x-1">
+                <a href="/dashboard" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-chart-pie text-slate-400"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/assets" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-server text-slate-400"></i>
+                    <span>Asset Inventory</span>
+                </a>
+                <a href="/compliance" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-list-check text-slate-400"></i>
+                    <span>NIST CSF Assessment</span>
+                </a>
+                <a href="/playbook" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-book-bookmark text-slate-400"></i>
+                    <span>Remediation Playbook</span>
+                </a>
+                <a href="/report" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-slate-800 transition flex items-center space-x-2">
+                    <i class="fa-solid fa-file-shield text-slate-400"></i>
+                    <span>Executive Report</span>
+                </a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="flex items-center space-x-3">
+                <form action="/scan/run-all" method="post" class="inline">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3 py-2 rounded-md shadow-sm transition flex items-center space-x-1.5 cursor-pointer">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Audit All Assets</span>
+                    </button>
+                </form>
+                <a href="/h2-console" target="_blank" title="H2 Database Console"
+                   class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-2 rounded-md text-xs font-mono transition border border-slate-700">
+                    <i class="fa-solid fa-database"></i>
+                    <span class="hidden sm:inline ml-1">H2 DB</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Global Flash Alerts Inside Navbar Container -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 w-full" th:if="${successMessage != null}">
+            <div class="bg-emerald-500/20 border-l-4 border-emerald-400 p-3 rounded-r-md text-xs text-emerald-200 flex items-center space-x-2">
+                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                <span th:text="${successMessage}">Success</span>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 w-full" th:if="${errorMessage != null}">
+            <div class="bg-red-500/20 border-l-4 border-red-400 p-3 rounded-r-md text-xs text-red-200 flex items-center space-x-2">
+                <i class="fa-solid fa-circle-exclamation text-red-400"></i>
+                <span th:text="${errorMessage}">Error</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Footer Fragment -->
+    <footer th:fragment="footer" class="bg-white border-t border-slate-200 py-6 mt-12 no-print text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>
+                <span class="font-semibold text-slate-700">SME Cybersecurity Risk Monitor</span> — Automated Posture & Attack Surface Management for Small & Medium Enterprises
+            </div>
+            <div class="flex items-center space-x-4">
+                <span>NIST CSF Baseline</span>
+                <span>•</span>
+                <span>CIS Controls L1</span>
+                <span>•</span>
+                <span class="text-indigo-600 font-medium">Java 21 & Spring Boot 3</span>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

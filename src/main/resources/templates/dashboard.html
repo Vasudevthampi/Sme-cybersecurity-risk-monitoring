@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Executive Dashboard')}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+    <header th:replace="~{layout/base :: navbar}"></header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Top Header & Posture Banner -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-200 gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-2">
+                    <span>SME Security Posture & Risk Dashboard</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                          th:classappend="${stats.companyGrade == 'A+' or stats.companyGrade == 'A'} ? 'bg-emerald-100 text-emerald-800' :
+                                         (${stats.companyGrade == 'B' or stats.companyGrade == 'C'} ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800')"
+                          th:text="'Grade: ' + ${stats.companyGrade}">Grade: B</span>
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">Real-time attack surface monitoring, compliance health, and automated vulnerability detection.</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <a href="/report" class="inline-flex items-center space-x-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold px-3 py-2 rounded-md shadow-sm transition">
+                    <i class="fa-solid fa-file-pdf text-red-500"></i>
+                    <span>Export Executive Report</span>
+                </a>
+                <a href="/assets" class="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3.5 py-2 rounded-md shadow-sm transition">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add New Asset</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 4 Top KPI Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- 1. Overall Health Score -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 relative overflow-hidden">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Cyber Health Score</span>
+                    <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </span>
+                </div>
+                <div class="mt-3 flex items-baseline space-x-2">
+                    <span class="text-3xl font-black"
+                          th:classappend="${stats.companyHealthScore >= 75} ? 'text-emerald-600' : (${stats.companyHealthScore >= 50} ? 'text-amber-600' : 'text-red-600')"
+                          th:text="${stats.companyHealthScore} + '/100'">68/100</span>
+                    <span class="text-xs font-semibold uppercase"
+                          th:classappend="${stats.overallRiskLevel == 'Low'} ? 'text-emerald-600' : (${stats.overallRiskLevel == 'Medium'} ? 'text-amber-600' : 'text-red-600')"
+                          th:text="'(' + ${stats.overallRiskLevel} + ' Risk)'">(Medium Risk)</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+                    <div class="h-2 rounded-full transition-all duration-500"
+                         th:style="'width: ' + ${stats.companyHealthScore} + '%'"
+                         th:classappend="${stats.companyHealthScore >= 75} ? 'bg-emerald-500' : (${stats.companyHealthScore >= 50} ? 'bg-amber-500' : 'bg-red-500')"></div>
+                </div>
+            </div>
+
+            <!-- 2. Monitored Assets -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Monitored Assets</span>
+                    <span class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-network-wired"></i>
+                    </span>
+                </div>
+                <div class="mt-3 flex items-baseline space-x-2">
+                    <span class="text-3xl font-black text-slate-900" th:text="${stats.totalAssets}">3</span>
+                    <span class="text-xs text-slate-500">Active Endpoints</span>
+                </div>
+                <div class="mt-3 flex items-center space-x-3 text-xs">
+                    <span class="text-red-600 font-semibold" th:text="${stats.criticalAssets} + ' Critical'">1 Critical</span>
+                    <span class="text-slate-300">•</span>
+                    <span class="text-amber-600 font-semibold" th:text="${stats.highRiskAssets} + ' High Risk'">1 High Risk</span>
+                </div>
+            </div>
+
+            <!-- 3. Active Threat Findings -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Findings</span>
+                    <span class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-bug"></i>
+                    </span>
+                </div>
+                <div class="mt-3 flex items-baseline space-x-2">
+                    <span class="text-3xl font-black text-slate-900" th:text="${stats.totalFindings}">6</span>
+                    <span class="text-xs text-slate-500">Security Gaps</span>
+                </div>
+                <div class="mt-3 flex items-center space-x-2 text-xs">
+                    <span class="px-1.5 py-0.5 rounded bg-red-100 text-red-700 font-bold" th:text="${stats.criticalFindings} + ' Crit'">2 Crit</span>
+                    <span class="px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 font-bold" th:text="${stats.highFindings} + ' High'">1 High</span>
+                    <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-medium" th:text="${stats.mediumFindings} + ' Med'">3 Med</span>
+                </div>
+            </div>
+
+            <!-- 4. NIST CSF Governance -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">NIST CSF Compliance</span>
+                    <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </span>
+                </div>
+                <div class="mt-3 flex items-baseline space-x-2">
+                    <span class="text-3xl font-black text-emerald-600" th:text="${stats.complianceScore} + '%'">58%</span>
+                    <span class="text-xs text-slate-500">Controls Met</span>
+                </div>
+                <div class="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+                    <div class="bg-emerald-500 h-2 rounded-full" th:style="'width: ' + ${stats.complianceScore} + '%'"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200 lg:col-span-2">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-simple text-indigo-500"></i>
+                        <span>SME Threat Vector Risk Distribution</span>
+                    </h2>
+                    <span class="text-xs text-slate-400">Scale 0 - 100 (Lower is safer)</span>
+                </div>
+                <div class="h-64 relative">
+                    <canvas id="threatDistributionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-pie text-emerald-500"></i>
+                        <span>NIST Framework Health</span>
+                    </h2>
+                    <a href="/compliance" class="text-xs text-indigo-600 hover:underline">Self-Audit &rarr;</a>
+                </div>
+                <div class="h-52 relative flex items-center justify-center">
+                    <canvas id="complianceChart"></canvas>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-100 grid grid-cols-5 text-center text-xs">
+                    <div th:each="cat : ${compliance.categoryScores}">
+                        <div class="font-bold text-slate-800" th:text="${cat.value} + '%'">60%</div>
+                        <div class="text-[10px] text-slate-400 font-semibold truncate" th:text="${cat.key}">IDENTIFY</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Risks & Quick Wins Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Top Immediate Risks -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <h2 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-triangle-exclamation text-red-500"></i>
+                        <span>High-Priority Security Risks</span>
+                    </h2>
+                    <span class="text-xs text-red-600 font-semibold" th:text="${stats.criticalFindings + stats.highFindings} + ' Urgent Items'">3 Urgent</span>
+                </div>
+                <div class="mt-3 divide-y divide-slate-100 max-h-80 overflow-y-auto space-y-2">
+                    <div th:if="${stats.topRisks.isEmpty()}" class="py-8 text-center text-slate-400 text-sm">
+                        <i class="fa-solid fa-shield-check text-emerald-500 text-3xl mb-2"></i>
+                        <p>No critical or high security threats detected!</p>
+                    </div>
+                    <div th:each="risk : ${stats.topRisks}" class="pt-3 first:pt-0">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold"
+                                      th:classappend="${risk.severity.badgeClass}"
+                                      th:text="${risk.severity.label}">CRITICAL</span>
+                                <h3 class="text-sm font-bold text-slate-800 mt-1" th:text="${risk.title}">Exposed Port 3389 (RDP)</h3>
+                                <p class="text-xs text-slate-500 mt-0.5 line-clamp-2" th:text="${risk.description}">RDP exposed directly to internet.</p>
+                            </div>
+                            <span class="text-[11px] text-slate-400 whitespace-nowrap bg-slate-100 px-2 py-1 rounded" th:text="${risk.remediationTimeEstimate != null ? risk.remediationTimeEstimate : '15m'}">10 mins</span>
+                        </div>
+                        <div class="mt-2 bg-slate-50 p-2 rounded text-xs text-indigo-700 font-mono border border-indigo-100 flex items-center justify-between">
+                            <span class="truncate" th:text="${risk.remediation}">Block port 3389 at firewall</span>
+                            <a href="/playbook" class="ml-2 text-indigo-600 font-sans hover:underline whitespace-nowrap text-[11px]">Fix Guide &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Wins -->
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <h2 class="font-bold text-slate-900 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
+                        <span>SME Quick Wins (High Impact, Low Effort)</span>
+                    </h2>
+                    <span class="text-xs text-slate-400">&le; 10 mins to resolve</span>
+                </div>
+                <div class="mt-3 divide-y divide-slate-100 max-h-80 overflow-y-auto space-y-2">
+                    <div th:if="${stats.quickWins.isEmpty()}" class="py-8 text-center text-slate-400 text-sm">
+                        <p>All rapid quick-wins completed!</p>
+                    </div>
+                    <div th:each="win : ${stats.quickWins}" class="pt-3 first:pt-0">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="text-[11px] font-semibold text-indigo-600 uppercase" th:text="${win.category.title}">HTTP Headers</span>
+                                <h3 class="text-sm font-bold text-slate-800" th:text="${win.title}">Missing HSTS Header</h3>
+                                <p class="text-xs text-slate-500 mt-0.5" th:text="${win.description}">SSL stripping defense.</p>
+                            </div>
+                            <span class="text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200 whitespace-nowrap">
+                                <i class="fa-solid fa-stopwatch mr-1"></i><span th:text="${win.remediationTimeEstimate}">5 mins</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitored Assets Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 class="font-bold text-slate-900 text-base">Digital Asset Inventory & Risk Status</h2>
+                    <p class="text-xs text-slate-500">Click any asset for detailed port findings, SSL certificate metrics, and security header audit.</p>
+                </div>
+                <a href="/assets" class="text-xs text-indigo-600 font-semibold hover:underline">Manage All Assets &rarr;</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 text-slate-400 uppercase text-[11px] font-bold border-b border-slate-200">
+                        <tr>
+                            <th class="py-3 px-4">Asset Name</th>
+                            <th class="py-3 px-4">Target Host</th>
+                            <th class="py-3 px-4">Type</th>
+                            <th class="py-3 px-4">Criticality</th>
+                            <th class="py-3 px-4">Last Scanned</th>
+                            <th class="py-3 px-4 text-center">Health Score</th>
+                            <th class="py-3 px-4 text-center">Risk Level</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr th:each="asset : ${assets}" class="hover:bg-slate-50 transition">
+                            <td class="py-3 px-4 font-semibold text-slate-900">
+                                <a th:href="@{'/assets/' + ${asset.id}}" class="hover:text-indigo-600" th:text="${asset.name}">Asset Name</a>
+                            </td>
+                            <td class="py-3 px-4 font-mono text-xs text-slate-500" th:text="${asset.target}">example.com</td>
+                            <td class="py-3 px-4">
+                                <span class="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded" th:text="${asset.type.displayName}">Domain</span>
+                            </td>
+                            <td class="py-3 px-4">
+                                <span class="text-xs font-semibold"
+                                      th:classappend="${asset.criticality.name() == 'CRITICAL'} ? 'text-red-700' :
+                                                     (${asset.criticality.name() == 'HIGH'} ? 'text-orange-700' : 'text-slate-600')"
+                                      th:text="${asset.criticality.name()}">HIGH</span>
+                            </td>
+                            <td class="py-3 px-4 text-xs text-slate-400"
+                                th:text="${asset.lastScanDate != null ? #temporals.format(asset.lastScanDate, 'yyyy-MM-dd HH:mm') : 'Never'}">2026-11-13</td>
+                            <td class="py-3 px-4 text-center">
+                                <div class="inline-flex items-center space-x-1 font-bold"
+                                     th:classappend="${asset.healthScore >= 75} ? 'text-emerald-600' : (${asset.healthScore >= 50} ? 'text-amber-600' : 'text-red-600')">
+                                    <span th:text="${asset.healthScore}">85</span>
+                                    <span class="text-[10px] text-slate-400 font-normal">/100</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold"
+                                      th:classappend="${asset.currentRiskLevel == 'Critical'} ? 'bg-red-100 text-red-800' :
+                                                     (${asset.currentRiskLevel == 'High'} ? 'bg-orange-100 text-orange-800' :
+                                                     (${asset.currentRiskLevel == 'Medium'} ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'))"
+                                      th:text="${asset.currentRiskLevel}">Medium</span>
+                            </td>
+                            <td class="py-3 px-4 text-right space-x-2">
+                                <form th:action="@{'/scan/run/' + ${asset.id}}" method="post" class="inline">
+                                    <button type="submit" class="text-indigo-600 hover:text-indigo-800 font-semibold text-xs py-1 px-2.5 rounded bg-indigo-50 hover:bg-indigo-100 transition">
+                                        <i class="fa-solid fa-arrows-rotate mr-1"></i> Scan
+                                    </button>
+                                </form>
+                                <a th:href="@{'/assets/' + ${asset.id}}" class="text-slate-600 hover:text-slate-900 text-xs py-1 px-2 rounded bg-slate-100 hover:bg-slate-200 transition">
+                                    View &rarr;
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <footer th:replace="~{layout/base :: footer}"></footer>
+
+    <!-- Chart.js Setup Scripts -->
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx1 = document.getElementById('threatDistributionChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Network Ports', 'SSL/TLS Health', 'HTTP Headers', 'Email / Phishing', 'CVE Matching'],
+                    datasets: [{
+                        label: 'Risk Exposure Score',
+                        data: [45, 20, 55, 60, 30],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.75)',
+                            'rgba(16, 185, 129, 0.75)',
+                            'rgba(245, 158, 11, 0.75)',
+                            'rgba(239, 68, 68, 0.75)',
+                            'rgba(99, 102, 241, 0.75)'
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { font: { size: 10 } },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            ticks: { font: { size: 11, weight: 'bold' } },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('complianceChart').getContext('2d');
+            const compScore = /*[[${stats.complianceScore}]]*/ 58;
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Implemented', 'Pending'],
+                    datasets: [{
+                        data: [compScore, 100 - compScore],
+                        backgroundColor: ['#10b981', '#f1f5f9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    cutout: '75%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

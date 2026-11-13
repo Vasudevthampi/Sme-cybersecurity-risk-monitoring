@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Asset Inventory')}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+    <header th:replace="~{layout/base :: navbar}"></header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-2">
+                    <i class="fa-solid fa-server text-indigo-600"></i>
+                    <span>SME Digital Asset Inventory & Attack Surface</span>
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">Register company domains, web portals, public IPs, and internal hosts to continuously monitor security posture.</p>
+            </div>
+            <button onclick="document.getElementById('addAssetModal').classList.remove('hidden')"
+                    class="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition cursor-pointer">
+                <i class="fa-solid fa-plus"></i>
+                <span>Register New Asset</span>
+            </button>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 text-slate-500 uppercase text-[11px] font-bold border-b border-slate-200">
+                        <tr>
+                            <th class="py-3.5 px-4">Asset Details</th>
+                            <th class="py-3.5 px-4">Target Address</th>
+                            <th class="py-3.5 px-4">Type</th>
+                            <th class="py-3.5 px-4">Criticality</th>
+                            <th class="py-3.5 px-4">Department</th>
+                            <th class="py-3.5 px-4 text-center">Health Score</th>
+                            <th class="py-3.5 px-4 text-center">Risk Level</th>
+                            <th class="py-3.5 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr th:if="${assets.isEmpty()}">
+                            <td colspan="8" class="text-center py-12 text-slate-400">
+                                <i class="fa-solid fa-inbox text-4xl mb-2 text-slate-300"></i>
+                                <p>No digital assets registered yet. Click "Register New Asset" above to add your first domain or IP.</p>
+                            </td>
+                        </tr>
+                        <tr th:each="asset : ${assets}" class="hover:bg-slate-50 transition">
+                            <td class="py-3.5 px-4">
+                                <a th:href="@{'/assets/' + ${asset.id}}" class="font-bold text-slate-900 hover:text-indigo-600" th:text="${asset.name}">Domain</a>
+                                <p class="text-xs text-slate-400 truncate max-w-xs" th:text="${asset.description}">Description</p>
+                            </td>
+                            <td class="py-3.5 px-4 font-mono text-xs text-indigo-700 font-semibold" th:text="${asset.target}">example.com</td>
+                            <td class="py-3.5 px-4">
+                                <span class="text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md font-medium" th:text="${asset.type.displayName}">Domain</span>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <span class="text-xs font-bold px-2 py-0.5 rounded"
+                                      th:classappend="${asset.criticality.name() == 'CRITICAL'} ? 'bg-red-50 text-red-700 border border-red-200' :
+                                                     (${asset.criticality.name() == 'HIGH'} ? 'bg-orange-50 text-orange-700 border border-orange-200' :
+                                                     (${asset.criticality.name() == 'MEDIUM'} ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-slate-50 text-slate-600 border border-slate-200'))"
+                                      th:text="${asset.criticality.name()}">HIGH</span>
+                            </td>
+                            <td class="py-3.5 px-4 text-xs text-slate-500" th:text="${asset.department}">IT</td>
+                            <td class="py-3.5 px-4 text-center">
+                                <div class="inline-flex items-center space-x-1 font-bold"
+                                     th:classappend="${asset.healthScore >= 75} ? 'text-emerald-600' : (${asset.healthScore >= 50} ? 'text-amber-600' : 'text-red-600')">
+                                    <span th:text="${asset.healthScore}">85</span>
+                                    <span class="text-[10px] text-slate-400">/100</span>
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold"
+                                      th:classappend="${asset.currentRiskLevel == 'Critical'} ? 'bg-red-100 text-red-800' :
+                                                     (${asset.currentRiskLevel == 'High'} ? 'bg-orange-100 text-orange-800' :
+                                                     (${asset.currentRiskLevel == 'Medium'} ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'))"
+                                      th:text="${asset.currentRiskLevel}">Medium</span>
+                            </td>
+                            <td class="py-3.5 px-4 text-right space-x-2">
+                                <form th:action="@{'/scan/run/' + ${asset.id}}" method="post" class="inline">
+                                    <button type="submit" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 font-semibold text-xs px-2.5 py-1.5 rounded transition">
+                                        <i class="fa-solid fa-arrows-rotate mr-1"></i> Audit
+                                    </button>
+                                </form>
+                                <a th:href="@{'/assets/' + ${asset.id}}" class="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 text-xs px-2.5 py-1.5 rounded transition">
+                                    Details
+                                </a>
+                                <form th:action="@{'/assets/' + ${asset.id} + '/delete'}" method="post" class="inline" onsubmit="return confirm('Are you sure you want to remove this asset?');">
+                                    <button type="submit" class="text-red-600 hover:text-red-800 text-xs p-1.5 rounded hover:bg-red-50 transition" title="Delete Asset">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add Asset Modal -->
+        <div id="addAssetModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-slate-200">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-shield-virus text-indigo-600"></i>
+                        <span>Register Digital Asset</span>
+                    </h3>
+                    <button onclick="document.getElementById('addAssetModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                <form th:action="@{/assets}" th:object="${newAsset}" method="post" class="mt-4 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Asset Name *</label>
+                        <input type="text" th:field="*{name}" required placeholder="e.g. Payment Gateway / Mail Server / Main Website"
+                               class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Target Address (Domain, IP, or URL) *</label>
+                        <input type="text" th:field="*{target}" required placeholder="e.g. mycompany.com or 203.0.113.15"
+                               class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase">Asset Type</label>
+                            <select th:field="*{type}" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option th:each="t : ${assetTypes}" th:value="${t}" th:text="${t.displayName}"></option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase">Business Criticality</label>
+                            <select th:field="*{criticality}" class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option th:each="c : ${criticalities}" th:value="${c}" th:text="${c.name()}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Department / Owner</label>
+                        <input type="text" th:field="*{department}" placeholder="e.g. IT, Finance, Marketing, Operations"
+                               class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Description / Purpose</label>
+                        <textarea th:field="*{description}" rows="2" placeholder="Brief note on what this asset runs or handles..."
+                                  class="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div class="pt-3 border-t border-slate-100 flex items-center justify-end space-x-3">
+                        <button type="button" onclick="document.getElementById('addAssetModal').classList.add('hidden')"
+                                class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                        <button type="submit" class="px-4 py-2 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm">Save & Audit Asset</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

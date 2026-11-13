@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head(${asset.name})}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+    <header th:replace="~{layout/base :: navbar}"></header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-4">
+            <div>
+                <div class="flex items-center space-x-2 text-xs text-slate-400 mb-1">
+                    <a href="/assets" class="hover:text-indigo-600">Assets</a>
+                    <span>/</span>
+                    <span class="text-slate-600 font-medium" th:text="${asset.name}">Domain</span>
+                </div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-3">
+                    <span th:text="${asset.name}">Main Website</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold"
+                          th:classappend="${asset.currentRiskLevel == 'Critical'} ? 'bg-red-100 text-red-800' :
+                                         (${asset.currentRiskLevel == 'High'} ? 'bg-orange-100 text-orange-800' :
+                                         (${asset.currentRiskLevel == 'Medium'} ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'))"
+                          th:text="${asset.currentRiskLevel} + ' Risk'">Medium Risk</span>
+                </h1>
+                <p class="text-sm font-mono text-indigo-700 mt-1" th:text="${asset.target}">example.com</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <form th:action="@{'/scan/run/' + ${asset.id}}" method="post">
+                    <button type="submit" class="inline-flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow-sm transition cursor-pointer">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Run Full Security Audit Now</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div th:if="${!scanHistory.isEmpty()}" th:with="latestScan=${scanHistory[0]}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Exposed Ports</span>
+                    <i class="fa-solid fa-network-wired text-slate-400"></i>
+                </div>
+                <div class="mt-2 text-xl font-mono font-bold text-slate-900" th:text="${latestScan.openPorts != null ? latestScan.openPorts : 'None'}">80, 443</div>
+                <div class="mt-2 text-xs text-slate-400" th:text="${latestScan.portsScanned} + ' Ports Checked'">15 Ports Checked</div>
+            </div>
+
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">SSL/TLS Health</span>
+                    <i class="fa-solid fa-lock text-slate-400"></i>
+                </div>
+                <div class="mt-2 flex items-center space-x-2">
+                    <span th:if="${latestScan.sslValid != null and latestScan.sslValid}" class="text-emerald-600 font-bold text-lg flex items-center">
+                        <i class="fa-solid fa-circle-check mr-1.5"></i> Valid
+                    </span>
+                    <span th:unless="${latestScan.sslValid != null and latestScan.sslValid}" class="text-red-600 font-bold text-lg flex items-center">
+                        <i class="fa-solid fa-circle-xmark mr-1.5"></i> Inactive / Invalid
+                    </span>
+                    <span th:if="${latestScan.sslDaysRemaining != null and latestScan.sslDaysRemaining > 0}"
+                          class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono"
+                          th:text="${latestScan.sslDaysRemaining} + ' days left'">45 days left</span>
+                </div>
+                <div class="mt-2 text-xs text-slate-400 truncate" th:text="'Protocol: ' + ${latestScan.sslProtocol != null ? latestScan.sslProtocol : 'N/A'}">TLS 1.3</div>
+            </div>
+
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Security Headers</span>
+                    <i class="fa-solid fa-shield text-slate-400"></i>
+                </div>
+                <div class="mt-2 text-xs font-semibold text-slate-800 line-clamp-2"
+                     th:text="${latestScan.missingHeaders != null ? latestScan.missingHeaders : 'None'}">Missing HSTS, CSP</div>
+                <div class="mt-2 text-xs text-slate-400">Clickjacking & XSS Defenses</div>
+            </div>
+
+            <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Email Spoofing Risk</span>
+                    <i class="fa-solid fa-envelope-shield text-slate-400"></i>
+                </div>
+                <div class="mt-2">
+                    <span th:if="${latestScan.emailSpoofable != null and latestScan.emailSpoofable}"
+                          class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Spoofable (Phishing Risk)
+                    </span>
+                    <span th:unless="${latestScan.emailSpoofable != null and latestScan.emailSpoofable}"
+                          class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">
+                        <i class="fa-solid fa-circle-check mr-1"></i> Protected by DMARC
+                    </span>
+                </div>
+                <div class="mt-2 text-[11px] font-mono text-slate-400 truncate" th:text="'DMARC: ' + ${latestScan.dmarcRecord != null ? latestScan.dmarcRecord : 'Missing'}">v=DMARC1...</div>
+            </div>
+        </div>
+
+        <div th:if="${!scanHistory.isEmpty()}" th:with="latestScan=${scanHistory[0]}" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-magnifying-glass text-indigo-600"></i>
+                        <span>Audit Findings & Actionable Remediation</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5" th:text="${latestScan.summary}">Summary of audit findings.</p>
+                </div>
+                <span class="text-xs text-slate-400 font-mono"
+                      th:text="'Audited on ' + ${#temporals.format(latestScan.scanDate, 'yyyy-MM-dd HH:mm:ss')}">2026-11-13</span>
+            </div>
+
+            <div class="mt-4 space-y-4">
+                <div th:if="${latestScan.findings.isEmpty()}" class="py-12 text-center text-slate-400">
+                    <i class="fa-solid fa-circle-check text-emerald-500 text-4xl mb-2"></i>
+                    <p class="font-semibold text-slate-700">Zero security vulnerabilities detected on this endpoint!</p>
+                </div>
+
+                <div th:each="finding : ${latestScan.findings}" class="border border-slate-200 rounded-xl p-4 bg-slate-50/50 hover:bg-slate-50 transition">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider"
+                                  th:classappend="${finding.severity.badgeClass}"
+                                  th:text="${finding.severity.label}">CRITICAL</span>
+                            <span class="text-xs font-semibold text-slate-400" th:text="'[' + ${finding.category.title} + ']'">Category</span>
+                            <h3 class="font-bold text-slate-900 text-sm" th:text="${finding.title}">Vulnerability Title</h3>
+                        </div>
+                        <span class="text-xs text-slate-500 bg-white px-2.5 py-1 rounded border border-slate-200 font-medium">
+                            <i class="fa-regular fa-clock text-slate-400 mr-1"></i>
+                            <span th:text="'Est. Fix Time: ' + (${finding.remediationTimeEstimate != null ? finding.remediationTimeEstimate : '15m'})">Est: 10 mins</span>
+                        </span>
+                    </div>
+
+                    <div class="mt-3 text-xs text-slate-600 leading-relaxed">
+                        <p class="font-semibold text-slate-700 mb-0.5">Why This Matters to Your Business:</p>
+                        <p th:text="${finding.description}">Detailed explanation of the risk vector.</p>
+                    </div>
+
+                    <div class="mt-3 bg-white p-3 rounded-lg border border-slate-200 text-xs">
+                        <div class="font-bold text-indigo-700 mb-1 flex items-center space-x-1.5">
+                            <i class="fa-solid fa-wrench"></i>
+                            <span>How to Fix (Plain-English Guidance):</span>
+                        </div>
+                        <div class="font-mono text-slate-800 bg-slate-50 p-2 rounded border border-slate-100 text-xs break-all"
+                             th:text="${finding.remediation}">
+                            Exact configuration command or DNS record to add.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <h2 class="text-base font-bold text-slate-900 mb-4">Historical Audit Log</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-600">
+                    <thead class="bg-slate-50 text-slate-400 uppercase text-[10px] font-bold">
+                        <tr>
+                            <th class="py-2.5 px-3">Scan Date</th>
+                            <th class="py-2.5 px-3">Duration</th>
+                            <th class="py-2.5 px-3">Risk Score</th>
+                            <th class="py-2.5 px-3">Risk Level</th>
+                            <th class="py-2.5 px-3">Audit Summary</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr th:each="scan : ${scanHistory}">
+                            <td class="py-2.5 px-3 font-mono" th:text="${#temporals.format(scan.scanDate, 'yyyy-MM-dd HH:mm:ss')}">2026-11-13</td>
+                            <td class="py-2.5 px-3" th:text="${scan.scanDurationMs} + ' ms'">1500 ms</td>
+                            <td class="py-2.5 px-3 font-bold" th:text="${scan.riskScore} + '/100'">42/100</td>
+                            <td class="py-2.5 px-3 font-semibold" th:text="${scan.riskLevel}">Medium</td>
+                            <td class="py-2.5 px-3 truncate max-w-md text-slate-500" th:text="${scan.summary}">Summary text</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Remediation Playbook')}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+    <header th:replace="~{layout/base :: navbar}"></header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <div class="pb-4 border-b border-slate-200">
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center space-x-2">
+                <i class="fa-solid fa-book-bookmark text-indigo-600"></i>
+                <span>SME Cybersecurity Remediation Playbook</span>
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">Plain-English, copy-paste remediation recipes for small and medium businesses without a dedicated security team.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 space-y-3">
+                <div class="flex items-center space-x-2">
+                    <span class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-bold text-sm">1</span>
+                    <h2 class="text-base font-bold text-slate-900">Stop Domain Email Spoofing & Phishing (DMARC / SPF)</h2>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    <strong>The Problem:</strong> Cybercriminals send fake emails posing as your CEO or billing department to deceive customers and employees into paying fraudulent invoices (Business Email Compromise).
+                </p>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div class="text-[11px] font-bold text-slate-700 uppercase mb-1">Step 1: Publish DMARC TXT Record</div>
+                    <pre class="bg-slate-900 text-emerald-400 p-2.5 rounded font-mono text-xs overflow-x-auto">v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@yourdomain.com;</pre>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div class="text-[11px] font-bold text-slate-700 uppercase mb-1">Step 2: Enforce SPF Record</div>
+                    <pre class="bg-slate-900 text-emerald-400 p-2.5 rounded font-mono text-xs overflow-x-auto">v=spf1 include:_spf.google.com ~all</pre>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 space-y-3">
+                <div class="flex items-center space-x-2">
+                    <span class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">2</span>
+                    <h2 class="text-base font-bold text-slate-900">Block Exposed Remote Desktop (RDP) & SMB Ransomware Vectors</h2>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    <strong>The Problem:</strong> Over 70% of SME ransomware attacks begin with exposed RDP (port 3389) or SMB (port 445). Botnets scan the internet 24/7 trying default passwords.
+                </p>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div class="text-[11px] font-bold text-slate-700 uppercase mb-1">Fix: Block at Perimeter & Enforce VPN</div>
+                    <ul class="text-xs text-slate-600 list-disc list-inside space-y-1">
+                        <li>Delete port-forwarding rules for ports <strong>3389</strong> and <strong>445</strong> on routers.</li>
+                        <li>Require employees to connect via a secure VPN (WireGuard or OpenVPN) before accessing internal desktops.</li>
+                        <li>Enable <strong>Network Level Authentication (NLA)</strong> in Windows Remote Desktop settings.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 space-y-3">
+                <div class="flex items-center space-x-2">
+                    <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-sm">3</span>
+                    <h2 class="text-base font-bold text-slate-900">Enforce HTTPS & Browser Security Headers (HSTS, CSP)</h2>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    <strong>The Problem:</strong> Without HSTS, attackers can downgrade users from HTTPS to unencrypted HTTP to snoop passwords. Without X-Frame-Options, your web portal can be framed in Clickjacking scams.
+                </p>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div class="text-[11px] font-bold text-slate-700 uppercase mb-1">Nginx Configuration Snippet:</div>
+                    <pre class="bg-slate-900 text-emerald-400 p-2.5 rounded font-mono text-[11px] overflow-x-auto">add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;</pre>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 space-y-3">
+                <div class="flex items-center space-x-2">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm">4</span>
+                    <h2 class="text-base font-bold text-slate-900">Deploy the 3-2-1 Immutable Backup Rule</h2>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    <strong>The Problem:</strong> Modern ransomware actively hunts down and wipes connected backup drives before encrypting primary servers.
+                </p>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div class="text-[11px] font-bold text-slate-700 uppercase mb-1">The 3-2-1 Strategy:</div>
+                    <ul class="text-xs text-slate-600 space-y-1">
+                        <li><strong>3 Copies:</strong> Primary + 2 backup copies.</li>
+                        <li><strong>2 Formats:</strong> Different storage media (NAS + Cloud).</li>
+                        <li><strong>1 Offsite / Air-Gapped:</strong> Cloud copy with <strong>Object Lock</strong> (immutable against ransomware deletion).</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>

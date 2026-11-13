@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/base :: head('Security Audit Results')}"></head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans antialiased">
+    <header th:replace="~{layout/base :: navbar}"></header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+            <div>
+                <a th:href="@{'/assets/' + ${scan.asset.id}}" class="text-xs text-indigo-600 hover:underline">&larr; Back to Asset</a>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1" th:text="'Audit Report: ' + ${scan.asset.name}">Audit Report</h1>
+                <p class="text-xs text-slate-500" th:text="${scan.summary}">Scan summary</p>
+            </div>
+            <div class="text-right">
+                <span class="text-xs font-bold uppercase tracking-wider block text-slate-400">Risk Level</span>
+                <span class="px-3 py-1 rounded-full text-xs font-black inline-block mt-1"
+                      th:classappend="${scan.riskLevel == 'Critical'} ? 'bg-red-100 text-red-800' :
+                                     (${scan.riskLevel == 'High'} ? 'bg-orange-100 text-orange-800' :
+                                     (${scan.riskLevel == 'Medium'} ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'))"
+                      th:text="${scan.riskLevel} + ' (Score: ' + ${scan.riskScore} + '/100)'">Critical (Score: 85/100)</span>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-4">
+            <h2 class="font-bold text-slate-900 text-base">Detected Vulnerabilities & Recommendations</h2>
+            <div th:if="${scan.findings.isEmpty()}" class="py-8 text-center text-slate-400">
+                <i class="fa-solid fa-circle-check text-emerald-500 text-3xl mb-2"></i>
+                <p>No vulnerabilities found during this scan!</p>
+            </div>
+            <div th:each="f : ${scan.findings}" class="border border-slate-200 rounded-lg p-4 bg-slate-50/50 space-y-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-0.5 rounded text-xs font-bold"
+                              th:classappend="${f.severity.badgeClass}"
+                              th:text="${f.severity.label}">HIGH</span>
+                        <h3 class="font-bold text-slate-900 text-sm" th:text="${f.title}">Title</h3>
+                    </div>
+                    <span class="text-xs text-slate-500" th:text="'Est. Fix: ' + (${f.remediationTimeEstimate != null ? f.remediationTimeEstimate : '15m'})">15 mins</span>
+                </div>
+                <p class="text-xs text-slate-600" th:text="${f.description}">Description</p>
+                <div class="bg-white p-2.5 rounded border border-slate-200 text-xs font-mono text-indigo-900" th:text="${f.remediation}">Remediation</div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer th:replace="~{layout/base :: footer}"></footer>
+</body>
+</html>
