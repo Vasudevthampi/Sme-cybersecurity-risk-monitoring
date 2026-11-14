@@ -2,23 +2,34 @@
 setlocal
 title SME Cybersecurity Risk Monitor
 
-if "%JAVA_HOME%"=="" (
-    set "JAVA_HOME=C:\Users\siirr\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_21.0.10.v20260205-0638\jre"
+if defined JAVA_HOME (
+    set "JAVA_CMD=%JAVA_HOME%\bin\java.exe"
+    set "PATH=%JAVA_HOME%\bin;%PATH%"
+) else (
+    set "JAVA_CMD=java.exe"
 )
-set "PATH=%JAVA_HOME%\bin;%PATH%"
 
 cd /d "%~dp0"
 
 echo ======================================================================
 echo    Starting Small and Medium Enterprises Cybersecurity Risk Monitor
 echo ======================================================================
-echo [1/3] Using Java runtime: %JAVA_HOME%\bin\java.exe
+echo [1/3] Using Java runtime: %JAVA_CMD%
 
 if not exist "%~dp0target\sme-cyber-risk-monitor-1.0.0.jar" (
     echo [2/3] Executable JAR not found. Building with Maven wrapper...
     call "%~dp0mvnw.cmd" package -DskipTests=true
+    if errorlevel 1 (
+        echo Build failed. Check that Java and Maven are installed and configured.
+        exit /b 1
+    )
 ) else (
     echo [2/3] Found pre-built executable JAR: target\sme-cyber-risk-monitor-1.0.0.jar
+)
+
+if not exist "%~dp0target\sme-cyber-risk-monitor-1.0.0.jar" (
+    echo Build did not produce the executable JAR.
+    exit /b 1
 )
 
 echo [3/3] Launching application on http://localhost:8085 ...
@@ -35,5 +46,5 @@ echo (Press Ctrl+C to stop the server at any time)
 echo ======================================================================
 echo.
 
-"%JAVA_HOME%\bin\java.exe" -jar "%~dp0target\sme-cyber-risk-monitor-1.0.0.jar"
+"%JAVA_CMD%" -jar "%~dp0target\sme-cyber-risk-monitor-1.0.0.jar"
 pause

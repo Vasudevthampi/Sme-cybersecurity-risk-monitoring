@@ -68,7 +68,7 @@ Double-click or run:
 ```cmd
 run.bat
 ```
-This automatically sets up `JAVA_HOME` and launches the application on port **8085**.
+This uses Java from `JAVA_HOME` or `PATH`. If the executable JAR is missing, the Maven Wrapper downloads Maven on its first run, builds the application, and launches it on port **8085**.
 
 ### Option B: Maven Wrapper (Command Line)
 ```cmd
